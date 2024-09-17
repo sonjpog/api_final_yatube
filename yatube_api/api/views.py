@@ -1,5 +1,4 @@
 from django.shortcuts import get_object_or_404
-
 from rest_framework import filters, mixins, permissions, viewsets
 from rest_framework.pagination import LimitOffsetPagination
 
@@ -77,7 +76,7 @@ class CommentViewSet(viewsets.ModelViewSet):
         Возвращает все комментарии к конкретному посту.
         Пост определяется по 'post_id', переданному в URL.
         """
-        post = get_object_or_404(Post, pk=self.kwargs.get('post_id'))
+        post = self.get_post()
         return post.comments.all()
 
     def perform_create(self, serializer):
@@ -85,5 +84,11 @@ class CommentViewSet(viewsets.ModelViewSet):
         Переопределяет метод создания, чтобы комментарий
         был привязан к посту и автором был установлен текущий пользователь.
         """
-        post = get_object_or_404(Post, pk=self.kwargs.get('post_id'))
+        post = self.get_post()
         serializer.save(post=post, author=self.request.user)
+
+    def get_post(self):
+        """
+        Возвращает пост, соответствующий 'post_id' из URL.
+        """
+        return get_object_or_404(Post, pk=self.kwargs.get('post_id'))
